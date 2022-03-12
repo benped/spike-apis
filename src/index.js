@@ -14,11 +14,12 @@ import axios from "axios";
 // Create the rootSaga generator function
 function* rootSaga() {
   yield takeEvery('FETCH_STOP_INFO', fetchStop);
-  yield textMe('TEXT_ME',textMe)
+  yield takeEvery('TEXT_ME',textMe);
 }
 
 function* fetchStop(action) {
-  // get all movies from the DB
+    
+  // get all incoming buses
   try {
       console.log("stop is:", action.payload);
     const stopData = yield axios.get(`https://svc.metrotransit.org/nextripv2/${action.payload}`);
@@ -30,9 +31,14 @@ function* fetchStop(action) {
   }
 }
 
-function* textMe(){
+function* textMe(action){
+    console.log('INside textMe SAGA',action.payload);
+    let text = `Next Bus: ${action.payload.stop.departure_text} Route: ${action.payload.stop.route_short_name} Direction: ${action.payload.stop.direction_text}`;
+    console.log('text is', {text: text, phone: Number(action.payload.phone)});
+    
     try {
-        yield axios.post('/api/stops');
+       
+        yield axios.post('/api/stops', { text: text, phone: Number(action.payload.phone)});
     } catch {
         console.log('textMe failed');
         
